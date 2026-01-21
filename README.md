@@ -1,33 +1,84 @@
-# PokemonRoguelike
+PokeLike - A Pokémon-Inspired Roguelike
 
-A [libGDX](https://libgdx.com/) project generated with [gdx-liftoff](https://github.com/libgdx/gdx-liftoff).
+A procedurally generated dungeon crawler built from scratch in Java using the [LibGDX](https://libgdx.com/) framework. This project combines classic monster-catching mechanics with infinite roguelike exploration.
+🚀 Project Overview
 
-This project was generated with a template including simple application launchers and a main class extending `Game` that sets the first screen.
+This game was developed as a technical exploration into game architecture, specifically focusing on Model-View-Controller (MVC) patterns and procedural generation. It features an infinite overworld, turn-based combat, and persistent party management.
 
-## Platforms
+Current State: Playable Prototype (v0.5)
+🛠 Tech Stack
 
-- `core`: Main module with the application logic shared by all platforms.
-- `lwjgl3`: Primary desktop platform using LWJGL3; was called 'desktop' in older docs.
+- Language: Java 17+
+- Framework: LibGDX (LWJGL3 backend)
+- Build Tool: Gradle
+- Template: Built upon the standard gdx-liftoff / LibGDX Gradle template.
 
-## Gradle
+✨ Features Implemented
+🌍 Infinite Exploration
 
-This project uses [Gradle](https://gradle.org/) to manage dependencies.
-The Gradle wrapper was included, so you can run Gradle tasks using `gradlew.bat` or `./gradlew` commands.
-Useful Gradle tasks and flags:
+- Procedural Generation: The world is generated in "chunks" (screens) as you move.
+- Persistence: The game "remembers" every screen you visit. Dropped items stay dropped; defeated enemies stay defeated.
+- Seamless Travel: Walk off the edge of the screen to transition to the next area (Zelda/Celeste style).
 
-- `--continue`: when using this flag, errors will not stop the tasks from running.
-- `--daemon`: thanks to this flag, Gradle daemon will be used to run chosen tasks.
-- `--offline`: when using this flag, cached dependency archives will be used.
-- `--refresh-dependencies`: this flag forces validation of all dependencies. Useful for snapshot versions.
-- `build`: builds sources and archives of every project.
-- `cleanEclipse`: removes Eclipse project data.
-- `cleanIdea`: removes IntelliJ project data.
-- `clean`: removes `build` folders, which store compiled classes and built archives.
-- `eclipse`: generates Eclipse project data.
-- `idea`: generates IntelliJ project data.
-- `lwjgl3:jar`: builds application's runnable jar, which can be found at `lwjgl3/build/libs`.
-- `lwjgl3:run`: starts the application.
-- `test`: runs unit tests (if any).
+⚔️ Turn-Based Combat
 
-Note that most tasks that are not specific to a single project can be run with `name:` prefix, where the `name` should be replaced with the ID of a specific project.
-For example, `core:clean` removes `build` folder only from the `core` project.
+- Classic Battle System: Encounter wild monsters, attack, or attempt to catch them.
+- Party System: Build a team of up to 10 monsters.
+- Permadeath (Sort of): If your active monster faints, the next available team member is automatically sent out. If the whole team wipes, it's Game Over.
+
+🎒 Inventory & Menus
+
+- Item System: Pick up Potions (Heal) and Pokéballs (Catch) scattered in the world.
+- Interactive Inventory: A grid-based menu to view your squad, check HP, and use items.
+- Game State Management: Main Menu, Pause Menu, and seamless state switching.
+
+🏗 Architecture
+
+The project adheres to SOLID principles and the MVC (Model-View-Controller) pattern to ensure scalability.
+
+- Models: WorldManager, BattleManager (Pure data and state).
+- Controllers: PlayerController, BattleController, InventoryController (Business logic, input handling, rules).
+- Views: DungeonScreen, BattleScreen, InventoryScreen (Rendering logic only).
+
+🎮 Controls
+Context     Key                   Action
+General     Arrows / WASD         Move / Navigate Menus
+            ESC                   Pause Game / Return
+Exploration I                     Open Inventory
+            Walk Over             Pick up Items / Encounter Enemies
+Battle      SPACE                 Attack
+            C                     Catch Enemy (needs Pokéball)
+            H                     Heal Active Monster (needs Potion)
+            S                     Switch Active Monster
+Inventory   Arrows                Move Selection Cursor
+            H                     Use Potion on Selected Monster
+
+📦 How to Run
+
+This project uses the Gradle wrapper, so no manual Gradle installation is required.
+
+Clone the repository:
+```Bash
+
+git clone https://github.com/robin-demesmaeker06/pokelike.git
+cd pokelike
+```
+Run the game (Linux/Mac):
+```Bash
+
+./gradlew lwjgl3:run
+```
+Run the game (Windows):
+```Bash
+
+gradlew.bat lwjgl3:run
+```
+📝 Credits
+
+Code & Logic: Developed by Robin Demesmaeker.
+
+Framework: Powered by LibGDX.
+
+Assets: Placeholder assets used for prototyping.
+
+Created January 2026
