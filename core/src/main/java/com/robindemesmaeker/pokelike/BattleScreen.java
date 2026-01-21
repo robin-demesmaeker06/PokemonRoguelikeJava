@@ -27,10 +27,15 @@ public class BattleScreen extends ScreenAdapter {
     public BattleScreen(MainGame game, Pokemon enemy) {
         this.game = game;
         
-        // Initialize MVC
-        // Note: game.playerPokemon is our global player state
-        this.model = new BattleManager(game.playerPokemon, enemy);
+        // ... existing MVC setup ...
+        this.model = new BattleManager(game.getActivePokemon(), enemy);
         this.controller = new BattleController(game, model);
+        
+        // MOVED FROM show(): Initialize State Here
+        // This ensures state is only set ONCE when the battle is created, 
+        // not every time we unpause.
+        if (playerTexture == null) playerTexture = new Texture("player.png"); 
+        if (enemyTexture == null) enemyTexture = new Texture("placeholder-64x64.png"); 
     }
 
     @Override
@@ -42,12 +47,11 @@ public class BattleScreen extends ScreenAdapter {
 
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 800, 600);
-
-        // Load Textures
-        if (playerTexture == null) playerTexture = new Texture("player.png"); 
         
-        // Use the placeholder for enemies now so they look different!
-        if (enemyTexture == null) enemyTexture = new Texture("placeholder-64x64.png"); 
+        // REMOVED: battleState = 0;
+        // REMOVED: combatMessage = ...
+        // REMOVED: rewardsGiven = false;
+        // (These are now safely inside BattleManager's constructor)
     }
 
     @Override
@@ -103,7 +107,8 @@ public class BattleScreen extends ScreenAdapter {
         // Show Controls only on Player Turn
         if (model.battleState == 0) {
             font.getData().setScale(1.5f);
-            font.draw(batch, "[SPACE] Atk  [H] Potion  [C] Catch  [ESC] Run", 50, 50);
+            // Added [S] Switch
+            font.draw(batch, "[SPACE] Atk  [C] Catch  [S] Switch  [H] Potion", 50, 50);
             font.getData().setScale(2f);
         }
         

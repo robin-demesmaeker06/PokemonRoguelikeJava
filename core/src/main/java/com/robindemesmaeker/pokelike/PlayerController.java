@@ -51,6 +51,21 @@ public class PlayerController {
                 currentY = Interpolation.linear.apply(startY, targetY, alpha);
             }
             return; // Don't accept input while moving
+
+            
+        }
+
+        // Inside update()
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
+            game.previousScreen = game.dungeonScreen; // Remember we were in Dungeon
+            game.setScreen(new PauseMenuScreen(game));
+            return;
+        }
+        
+        // KEEP: 'I' for Inventory
+        if (Gdx.input.isKeyJustPressed(Input.Keys.I)) {
+            game.setScreen(new InventoryScreen(game));
+            return;
         }
 
         // 2. Handle Input
@@ -58,6 +73,7 @@ public class PlayerController {
         else if (Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.A)) attemptMove(-1, 0);
         else if (Gdx.input.isKeyPressed(Input.Keys.UP) || Gdx.input.isKeyPressed(Input.Keys.W)) attemptMove(0, 1);
         else if (Gdx.input.isKeyPressed(Input.Keys.DOWN) || Gdx.input.isKeyPressed(Input.Keys.S)) attemptMove(0, -1);
+        
     }
 
     private void attemptMove(int dx, int dy) {
@@ -147,8 +163,9 @@ public class PlayerController {
         // Regen Logic (Heal while walking)
         stepsTaken++;
         if (stepsTaken >= 5) {
-            if (game.playerPokemon.currentHp < game.playerPokemon.maxHp) {
-                game.playerPokemon.currentHp += 1;
+            Pokemon active = game.getActivePokemon();
+            if (active.currentHp < active.maxHp) {
+                active.currentHp += 1;
             }
             stepsTaken = 0;
         }

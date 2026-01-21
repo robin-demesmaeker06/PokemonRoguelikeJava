@@ -1,44 +1,81 @@
 package com.robindemesmaeker.pokelike;
 
 import com.badlogic.gdx.Game;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class MainGame extends Game {
     
-    public Pokemon playerPokemon; 
-    public DungeonScreen dungeonScreen; 
-    
-    // NEW: The Inventory
-    // Key = Item Type, Value = Quantity (e.g., POTION -> 3)
+    public List<Pokemon> team; 
+    public int currentMemberIndex = 0;
     public Map<Item, Integer> inventory; 
+    public com.badlogic.gdx.Screen previousScreen;
+    
+    // Screens
+    public DungeonScreen dungeonScreen; 
 
     @Override
     public void create() {
-        // 1. Initialize Inventory
+        // Start at MAIN MENU, do NOT create data yet
+        this.setScreen(new MainMenuScreen(this));
+    }
+    
+    public void startNewGame() {
         inventory = new HashMap<>();
-        inventory.put(Item.POTION, 1); // Start with 1 free potion
-        inventory.put(Item.POKEBALL, 5); // Start with 5 balls
+        inventory.put(Item.POTION, 1);
+        inventory.put(Item.POKEBALL, 5);
 
-        // 2. Create Player
+        team = new ArrayList<>();
         Species charizardSpec = new Species("Charizard", 100, 50, "Fire", "Flying");
-        playerPokemon = new Pokemon(charizardSpec, 5);
-        playerPokemon.currentHp += 20;
-        playerPokemon.maxHp += 20;
+        Pokemon starter = new Pokemon(charizardSpec, 5);
+        starter.currentHp += 20; 
+        starter.maxHp += 20;
+        team.add(starter);
 
-        // 3. Start Game
+        // Create the world
         dungeonScreen = new DungeonScreen(this);
         this.setScreen(dungeonScreen);
     }
+
+    // --- SAVE / LOAD STUBS ---
+    // We will implement JSON/Serialization later, for now we just log it.
     
-    // Helper to add items
-    public void addItem(Item item) {
-        int count = inventory.getOrDefault(item, 0);
-        inventory.put(item, count + 1);
-        System.out.println("Added " + item.name + ". Total: " + (count + 1));
+    public boolean hasSaveFile() {
+        return false; // Toggle to true if you implement saving
     }
     
-    // Helper to use items
+    public void saveGame() {
+        System.out.println("Saving game state... (To be implemented)");
+    }
+    
+    public void loadGame() {
+        System.out.println("Loading game state... (To be implemented)");
+        // If loaded successfully:
+        // this.setScreen(dungeonScreen);
+    }
+
+    // ... existing helpers (getActivePokemon, swapToNextAlive, addItem, useItem) ...
+    public Pokemon getActivePokemon() {
+        if (team == null || team.isEmpty()) return null;
+        return team.get(currentMemberIndex);
+    }
+    
+    public boolean swapToNextAlive() {
+        for (int i = 0; i < team.size(); i++) {
+            if (team.get(i).currentHp > 0) {
+                currentMemberIndex = i;
+                return true;
+            }
+        }
+        return false; 
+    }
+
+    public void addItem(Item item) {
+        inventory.put(item, inventory.getOrDefault(item, 0) + 1);
+    }
+    
     public boolean useItem(Item item) {
         int count = inventory.getOrDefault(item, 0);
         if (count > 0) {
@@ -46,10 +83,5 @@ public class MainGame extends Game {
             return true;
         }
         return false;
-    }
-
-    @Override
-    public void render() {
-        super.render();
     }
 }
