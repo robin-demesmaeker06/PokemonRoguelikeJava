@@ -31,19 +31,12 @@ public class MainGame extends ApplicationAdapter {
     // --- NEW: THE MAP DATA ---
     // 0 = Empty Floor
     // 1 = Wall
-    int[][] worldMap = {
-        {1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 1, 1, 1, 0, 0, 0, 1}, // Obstacle in middle
-        {1, 0, 0, 1, 0, 1, 0, 0, 0, 1},
-        {1, 0, 0, 1, 0, 1, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
-    };
-    int mapWidth = 10;
-    int mapHeight = 9;
+    int[][] worldMap;
+    int mapWidth = 50;
+    int mapHeight = 50;
+
+    java.util.List<GridEntity> wildPokemonList;
+    Texture enemyTexture;
 
     @Override
     public void create() {
@@ -57,11 +50,14 @@ public class MainGame extends ApplicationAdapter {
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 800, 600);
 
-        // Start at index [2, 2] (Safe spot inside walls)
-        targetX = 2 * TILE_SIZE;
-        targetY = 2 * TILE_SIZE;
-        currentX = targetX;
-        currentY = targetY;
+        enemyTexture = new Texture("player.png");
+        wildPokemonList = new java.util.ArrayList<>();
+
+        worldMap = MapGenerator.generateDungeon(mapWidth, mapHeight, 1000);
+
+        placePlayerOnFloor();
+
+        spawnEnemies(10);
     }
 
     @Override
@@ -99,9 +95,6 @@ public class MainGame extends ApplicationAdapter {
         
         for (int x = 0; x < mapWidth; x++) {
             for (int y = 0; y < mapHeight; y++) {
-                // Read the array reversed: map[y][x] 
-                // (Because visual Y goes UP, but array index goes DOWN)
-                // We flip y index: (mapHeight - 1 - y) so the map looks like the code
                 int tileType = worldMap[mapHeight - 1 - y][x];
 
                 if (tileType == 1) {
@@ -115,12 +108,24 @@ public class MainGame extends ApplicationAdapter {
         }
         shapeRenderer.end();
 
-        // Draw Player
+        // --- 3. DRAW SPRITES ---
         batch.begin();
+
+        // A. DRAW ENEMIES
+        for (GridEntity enemy : wildPokemonList) {
+            batch.setColor(1, 0.5f, 0.5f, 1); // Tint Red
+            batch.draw(enemy.texture, enemy.x, enemy.y, 64f, 64f);
+        }
+        
+        // Reset color before drawing player!
+        batch.setColor(1, 1, 1, 1); 
+
+        // B. DRAW PLAYER (Once, after enemies)
         if (playerTexture != null) {
             batch.draw(playerTexture, currentX, currentY, TILE_SIZE, TILE_SIZE);
-        }
-        batch.end();
+        }       
+        
+        batch.end(); // <--- Closed ONLY after everything is drawn
     }
 
     private void handleInput() {
@@ -139,29 +144,37 @@ public class MainGame extends ApplicationAdapter {
     }
 
     private void movePlayer(int dx, int dy) {
-        // Calculate Grid Coordinates of where we WANT to go
-        // (Current Position / 64) = Grid Index
+        // Calculate where we WANT to go
         int currentGridX = Math.round(currentX / TILE_SIZE);
         int currentGridY = Math.round(currentY / TILE_SIZE);
 
         int nextGridX = currentGridX + dx;
         int nextGridY = currentGridY + dy;
 
-        // --- COLLISION CHECK ---
-        
-        // 1. Check Bounds (Don't walk off the array)
+        // --- 1. BOUNDS CHECK ---
         if (nextGridX < 0 || nextGridX >= mapWidth || nextGridY < 0 || nextGridY >= mapHeight) {
             return;
         }
 
-        // 2. Check Wall (Is it a '1'?)
+        // --- 2. WALL CHECK ---
         // Remember the Y-flip: (mapHeight - 1 - y)
         int tileType = worldMap[mapHeight - 1 - nextGridY][nextGridX];
         if (tileType == 1) {
-            return; // STOP! It's a wall.
+            return; // Hit a wall
         }
 
-        // If we survived the checks, MOVE!
+        // --- 3. ENTITY CHECK (NEW!) ---
+        for (GridEntity enemy : wildPokemonList) {
+            if (enemy.gridX == nextGridX && enemy.gridY == nextGridY) {
+                // WE HIT AN ENEMY!
+                System.out.println("BATTLE STARTED with " + enemy.pokemonData.species.name + "!");
+                
+                // Optional: Knockback animation or visual flair could go here later
+                return; // STOP moving. Do not walk onto the enemy tile.
+            }
+        }
+
+        // If we passed all checks, MOVE!
         startX = currentX;
         startY = currentY;
         targetX = nextGridX * TILE_SIZE;
@@ -176,5 +189,51 @@ public class MainGame extends ApplicationAdapter {
         batch.dispose();
         shapeRenderer.dispose();
         if (playerTexture != null) playerTexture.dispose();
+    }
+
+    private void placePlayerOnFloor() {
+    int attempts = 0;
+    while (attempts < 1000) {
+        // Pick a random spot
+        int testX = com.badlogic.gdx.math.MathUtils.random(0, mapWidth - 1);
+        int testY = com.badlogic.gdx.math.MathUtils.random(0, mapHeight - 1);
+
+        // Check if it is a Floor (0)
+        // Remember the Y-flip logic: worldMap[height - 1 - y][x]
+        if (worldMap[mapHeight - 1 - testY][testX] == 0) {
+            // Found a valid spot! Set and break.
+            currentX = testX * TILE_SIZE;
+            currentY = testY * TILE_SIZE;
+            targetX = currentX;
+            targetY = currentY;
+            
+            // Also update the camera immediately so we don't see a "jump"
+            camera.position.set(currentX, currentY, 0);
+            return;
+            }
+        attempts++;
+        }
+    System.err.println("Could not find a floor tile!");
+    }
+
+    private void spawnEnemies(int count) {
+    Species ratSpec = new Species("Rattata", 30, 10, "Normal");
+    
+    for(int i = 0; i < count; i++) {
+        // Find a random floor tile (reuse your spawn logic or copy-paste it)
+        int ex = 0, ey = 0;
+        while(true) {
+            ex = com.badlogic.gdx.math.MathUtils.random(0, mapWidth - 1);
+            ey = com.badlogic.gdx.math.MathUtils.random(0, mapHeight - 1);
+            if (worldMap[mapHeight - 1 - ey][ex] == 0) break;
+        }
+        
+        // Create the Data
+        Pokemon wildMon = new Pokemon(ratSpec, 3);
+        
+        // Create the Visual Entity
+        GridEntity enemy = new GridEntity(wildMon, enemyTexture, ex, ey);
+        wildPokemonList.add(enemy);
+        }
     }
 }
