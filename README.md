@@ -41,17 +41,18 @@ The project adheres to SOLID principles and the MVC (Model-View-Controller) patt
 - Views: DungeonScreen, BattleScreen, InventoryScreen (Rendering logic only).
 
 🎮 Controls
-Context     Key                   Action
-General     Arrows / WASD         Move / Navigate Menus
-            ESC                   Pause Game / Return
-Exploration I                     Open Inventory
-            Walk Over             Pick up Items / Encounter Enemies
-Battle      SPACE                 Attack
-            C                     Catch Enemy (needs Pokéball)
-            H                     Heal Active Monster (needs Potion)
-            S                     Switch Active Monster
-Inventory   Arrows                Move Selection Cursor
-            H                     Use Potion on Selected Monster
+| Context | Key | Action |
+| :--- | :--- | :--- |
+| **General** | `Arrows` / `WASD` | Move / Navigate Menus |
+| | `ESC` | Pause Game / Return |
+| **Exploration** | `I` | Open Inventory |
+| | `Walk Over` | Pick up Items / Encounter Enemies |
+| **Battle** | `SPACE` | Attack |
+| | `C` | Catch Enemy (needs Pokéball) |
+| | `H` | Heal Active Monster (needs Potion) |
+| | `S` | Switch Active Monster |
+| **Inventory** | `Arrows` | Move Selection Cursor |
+| | `H` | Use Potion on Selected Monster |
 
 📦 How to Run
 
